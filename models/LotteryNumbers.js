@@ -3,48 +3,45 @@ const mongoose = require('mongoose');
 const LotteryTicketSchema = new mongoose.Schema({
     selectNumber: {
         type: Number,
-        // Add validation if needed
+        required: true // Add validation if needed
     },
     quantityOfNumber: {
         type: Number,
         default: 1
-    },
-    priceOnNumber: {
-        type: Number,
-        default: 100
     }
+});
+
+const minGameSchema = new mongoose.Schema({
+    GameName: {
+        type: String,
+        required: true
+    },
+    GameId: {
+        type: mongoose.Types.ObjectId,
+        ref: "Game",
+        required: true
+    },
+    TotalCartPrice: {
+        type: Number,
+        required: true
+    },
+    selectedNumbers: [LotteryTicketSchema]
 });
 
 // Define schema for the main lottery entry
 const LotteryNumberSchema = new mongoose.Schema({
-    gameName: {
-        type: String,
-        required: true
-    },
-    GameId:{
-        type: mongoose.Types.ObjectId,
-        ref: "Game" 
-    },
-    selectedNumbers: [LotteryTicketSchema],
-    totalPrice: {
-        type: Number,
-        required: true
-    },
-    perNumberPrice: {
-        type: Number,
-        required: true
-    },
+    Game: [minGameSchema],
     user: {
         type: mongoose.Types.ObjectId,
-        ref: "User" 
+        ref: "User",
+        required: true
     },
-    resultAnounced:{
-        type:Boolean,
-        default:false
+    transactionId: {
+        type: String
     }
 }, { timestamps: true });
 
 // Define models based on schemas
 const LotteryNumber = mongoose.model('LotteryNumber', LotteryNumberSchema);
 
-module.exports =  LotteryNumber ;
+module.exports = LotteryNumber;

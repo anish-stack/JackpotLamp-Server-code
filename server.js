@@ -11,12 +11,9 @@ dotenv.config()
 const Port = process.env.PORT
 // Database Calling
 ConnectDatabase()
-            
 
-const options = {
-    credentials: true};
 // middlware
-app.use(cors(options))
+app.use(cors())
 app.use(express.json())
 app.use(CookkieParser())
 

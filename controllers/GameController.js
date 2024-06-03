@@ -1,4 +1,6 @@
 const Game = require('../models/NewGames')
+const Draw = require('../models/DrawModel')
+
 // Function to validate date and time format
 function isValidDate(dateString) {
     const regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/;
@@ -7,7 +9,7 @@ function isValidDate(dateString) {
 exports.createGame = async (req, res) => {
     try {
         const { GameName, PricePool, DateAndTimeOfWinnerAnnouncement, TimeDate, HowMuchNumber } = req.body;
-        
+
         // Check if all required fields are provided
         if (!GameName || !PricePool || !DateAndTimeOfWinnerAnnouncement || !TimeDate || !HowMuchNumber) {
             return res.status(400).json({
@@ -168,4 +170,119 @@ exports.getGameByName = async (req, res) => {
     }
 };
 
-                                                                                
+exports.MakeADrawForGame = async (req, res) => {
+    try {
+        const { GameId, gameName, WinningNumbers, MatchingAll, MatchingFour, MatchingThree, MatchingTwo, WinnerAnnounceDate } = req.body
+        if (!GameId || !gameName || !WinnerAnnounceDate || !WinningNumbers || !MatchingAll || !MatchingTwo || !MatchingThree || !MatchingFour) {
+            return res.status(403).json({
+                success: false,
+                msg: "Please Filled All Required Fields."
+            });
+        }
+        const NewGameDraw = new Draw({
+            GameId,
+            gameName,
+            WinningNumbers,
+            MatchingAll,
+            MatchingFour,
+            MatchingThree,
+            MatchingTwo,
+            WinnerAnnounceDate
+        })
+        await NewGameDraw.save()
+        res.status(201).json({
+            success: true,
+            data: NewGameDraw,
+            msg: "Draw Successful"
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            msg: "Internal Server Error."
+        });
+    }
+}
+
+exports.UpdateDraw = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { GameId, gameName, WinningNumbers, MatchingAll, MatchingFour, MatchingThree, MatchingTwo, WinnerAnnounceDate } = req.body;
+
+        const updateFields = {};
+        if (GameId) updateFields.GameId = GameId;
+        if (gameName) updateFields.gameName = gameName;
+        if (WinningNumbers) updateFields.WinningNumbers = WinningNumbers;
+        if (MatchingAll) updateFields.MatchingAll = MatchingAll;
+        if (MatchingFour) updateFields.MatchingFour = MatchingFour;
+        if (MatchingThree) updateFields.MatchingThree = MatchingThree;
+        if (MatchingTwo) updateFields.MatchingTwo = MatchingTwo;
+        if (WinnerAnnounceDate) updateFields.WinnerAnnounceDate = WinnerAnnounceDate;
+
+        const updatedDraw = await Draw.findByIdAndUpdate(id, updateFields, { new: true });
+
+        if (!updatedDraw) {
+            return res.status(404).json({
+                success: false,
+                msg: "Draw not found."
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: updatedDraw,
+            msg: "Draw Updated Successfully"
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            msg: "Internal Server Error."
+        });
+    }
+};
+
+exports.DeleteDraw = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const deletedDraw = await Draw.findByIdAndDelete(id);
+
+        if (!deletedDraw) {
+            return res.status(404).json({
+                success: false,
+                msg: "Draw not found."
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: deletedDraw,
+            msg: "Draw Deleted Successfully"
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            msg: "Internal Server Error."
+        });
+    }
+};
+
+exports.GetAllDraws = async (req, res) => {
+    try {
+        const draws = await Draw.find();
+
+        res.status(200).json({
+            success: true,
+            data: draws,
+            msg: "All Draws Retrieved Successfully"
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            msg: "Internal Server Error."
+        });
+    }
+};
