@@ -9,7 +9,7 @@ const Protect = async (req, res, next) => {
                 msg: "Please login first."
             });
         }
-
+        console.log(token)
         // Verify token
         const decoded = JWT.verify(token, process.env.JWT_SECRET);
 

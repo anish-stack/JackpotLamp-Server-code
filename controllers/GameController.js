@@ -1,7 +1,6 @@
 const Game = require('../models/NewGames')
 const Draw = require('../models/DrawModel')
-
-// Function to validate date and time format
+const Purchase = require('../models/LotteryNumbers'); // Function to validate date and time format
 function isValidDate(dateString) {
     const regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/;
     return regex.test(dateString);
@@ -27,12 +26,12 @@ exports.createGame = async (req, res) => {
         }
 
         // Date and Time Validation
-        if (!isValidDate(DateAndTimeOfWinnerAnnouncement)) {
-            return res.status(400).json({
-                success: false,
-                msg: "Invalid date and time format for DateAndTimeOfWinnerAnnouncement."
-            });
-        }
+        // if (!isValidDate(DateAndTimeOfWinnerAnnouncement)) {
+        //     return res.status(400).json({
+        //         success: false,
+        //         msg: "Invalid date and time format for DateAndTimeOfWinnerAnnouncement."
+        //     });
+        // }
 
         // Number Range Validation
         if (HowMuchNumber.startNumber >= HowMuchNumber.endNumber) {
@@ -172,13 +171,26 @@ exports.getGameByName = async (req, res) => {
 
 exports.MakeADrawForGame = async (req, res) => {
     try {
-        const { GameId, gameName, WinningNumbers, MatchingAll, MatchingFour, MatchingThree, MatchingTwo, WinnerAnnounceDate } = req.body
-        if (!GameId || !gameName || !WinnerAnnounceDate || !WinningNumbers || !MatchingAll || !MatchingTwo || !MatchingThree || !MatchingFour) {
+        const { GameId, gameName, WinningNumbers, MatchingAll, MatchingFour, MatchingThree, MatchingTwo, WinnerAnnounceDate } = req.body;
+
+        const missingFields = [];
+
+        if (!GameId) missingFields.push("GameId");
+        if (!gameName) missingFields.push("gameName");
+        if (!WinnerAnnounceDate) missingFields.push("WinnerAnnounceDate");
+        if (!WinningNumbers || WinningNumbers.length === 0) missingFields.push("WinningNumbers");
+        if (MatchingAll === undefined) missingFields.push("MatchingAll");
+        if (MatchingFour === undefined) missingFields.push("MatchingFour");
+        if (MatchingThree === undefined) missingFields.push("MatchingThree");
+        if (MatchingTwo === undefined) missingFields.push("MatchingTwo");
+
+        if (missingFields.length > 0) {
             return res.status(403).json({
                 success: false,
-                msg: "Please Filled All Required Fields."
+                msg: `Please fill all required fields: ${missingFields.join(', ')}.`
             });
         }
+
         const NewGameDraw = new Draw({
             GameId,
             gameName,
@@ -188,8 +200,10 @@ exports.MakeADrawForGame = async (req, res) => {
             MatchingThree,
             MatchingTwo,
             WinnerAnnounceDate
-        })
-        await NewGameDraw.save()
+        });
+
+        await NewGameDraw.save();
+
         res.status(201).json({
             success: true,
             data: NewGameDraw,
@@ -202,7 +216,8 @@ exports.MakeADrawForGame = async (req, res) => {
             msg: "Internal Server Error."
         });
     }
-}
+};
+
 
 exports.UpdateDraw = async (req, res) => {
     try {

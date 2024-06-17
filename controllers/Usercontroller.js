@@ -168,6 +168,7 @@ exports.resendOtp = async (req, res) => {
 exports.LoginUser = async (req, res) => {
     try {
         const { Email, Password } = req.body;
+        console.log("Email Via Login", Email);
 
         // Check if both email and password are provided
         if (!Email || !Password) {
@@ -177,24 +178,28 @@ exports.LoginUser = async (req, res) => {
             });
         }
 
+        // Normalize the email to ensure consistency
+        const normalizedEmail = Email.toLowerCase();
+
         // Find the user in the database based on the provided email
-        const user = await User.findOne({ Email });
+        const user = await User.findOne({ Email: normalizedEmail });
+        console.log(user);
 
         // If the user does not exist
         if (!user) {
-            return res.status(400).json({
+            return res.status(401).json({
                 success: false,
                 msg: "User is not associated with this email."
             });
         }
 
         // Verify the password
-        const isPasswordValid = await user.comparePassword(Password);
-        console.log(isPasswordValid)
+        const isPasswordValid = await bcrypt.compare(Password, user.Password); // Assuming user.Password is the hashed password
+        console.log(isPasswordValid);
 
         // If the password is incorrect
         if (!isPasswordValid) {
-            return res.status(400).json({
+            return res.status(401).json({
                 success: false,
                 msg: "Invalid password."
             });
@@ -210,18 +215,17 @@ exports.LoginUser = async (req, res) => {
             LastName: user.LastName,
             Email: user.Email,
             // Add any other fields you want to include here
-            // Exclude the 'Password' field
         };
 
         // Send the token and user details in the response
-        res.cookie('token', token, { httpOnly: true }).json({
+        res.cookie('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' }).json({
             success: true,
             token,
             user: userWithoutPassword
         });
 
     } catch (error) {
-        console.error(error);
+        console.error('Login Error:', error);
         res.status(500).json({
             success: false,
             msg: "Internal Server Error."
@@ -297,15 +301,17 @@ exports.newPassword = async (req, res) => {
                 msg: "Please provide all fields."
             });
         }
-
-        const checkUser = await User.findOne({ Email });
+        const MainEmail = Email.toLowerCase()
+        console.log("Pass",newPassword)
+        console.log(Email.toLowerCase())
+        const checkUser = await User.findOne({ Email:MainEmail });
         if (!checkUser) {
             return res.status(400).json({
                 success: false,
                 msg: "User not found."
             });
         }
-        console.log(checkUser,"CheckOtp")
+        // console.log(checkUser,"CheckOtp")
 
         const Checkotp = await User.find({ PasswordResetOtp: Otp });
         console.log(Checkotp,"CheckOtp")
@@ -323,10 +329,7 @@ exports.newPassword = async (req, res) => {
         }
 
         // Use the hashed password from the user model
-        const salt = await bcrypt.genSalt(saltRounds);
-
-        // Hash the new password with the generated salt
-        const hashedPassword = await bcrypt.hash(newPassword, salt);
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
 
         // Update user's password and clear the PasswordResetOtp
         checkUser.Password = hashedPassword;

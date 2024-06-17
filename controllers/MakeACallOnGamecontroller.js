@@ -286,6 +286,18 @@ exports.getMyPurchaseNumber = async (req, res) => {
     }
 };
 
+exports.getAllPurchaseNumber = async (req, res) => {
+    try {
+  
+        const MyPurchase = await LotteryNumber.find();
+        // console.log(userId)
+        res.status(200).json({ success: true, data: MyPurchase });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
 
 
 
