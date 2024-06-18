@@ -375,3 +375,27 @@ exports.getAuthKey = async (req, res) => {
         })
     }
 }
+
+exports.getAllUsers = async (req,res)=>{
+    try {
+        const AllUser =  await User.find().select('-Password')
+        if(AllUser.length === 0  ){
+            return res.status(403).json({
+                success:false,
+                msg:"No User Found In Database"
+            })
+        }
+        
+        res.status(200).json({
+            success:true,
+            data:AllUser,
+            msg:"User Found Successful"
+        })
+    } catch (error) {
+        res.status(501).json({
+            success:false,
+            data:error,
+            msg:"Error In Founding user"
+        })
+    }
+}

@@ -1,5 +1,5 @@
 const express = require('express')
-const { register, verifyOtp, resendOtp, LoginUser, logout, PasswordChangeRequest, newPassword, getAuthKey } = require('../controllers/Usercontroller')
+const { register, verifyOtp, resendOtp, LoginUser, logout, PasswordChangeRequest, newPassword, getAuthKey, getAllUsers } = require('../controllers/Usercontroller')
 const route = express.Router()
 const Protect = require('../middleware/authMiddleware')
 const { createGame, updateGame, deleteGame, getAllGames, getGameByName, MakeADrawForGame, UpdateDraw, DeleteDraw, GetAllDraws } = require('../controllers/GameController')
@@ -35,6 +35,7 @@ route.delete('/draw/:id', DeleteDraw);
 route.get('/draws', GetAllDraws);
 route.get('/get-my-purchase',Protect, getMyPurchaseNumber)
 route.get('/get-all-purchase', getAllPurchaseNumber)
+route.get('/get-all-user',getAllUsers)
 
 // ===================================================
 // Call On Games Routes 

@@ -147,7 +147,7 @@ async function MakeANewPayment(totalPrice, req, res) {
             merchantUserId,
             name: "User",
             amount: totalPrice * 100, // Convert to minor units
-            redirectUrl: `http://localhost:5074/api/v1/status/${merchantTransactionId}?token=${req.headers.authorization ? req.headers.authorization.split(" ")[1] : ''}`,
+            redirectUrl: `https://api.jackpotlamp.com/api/v1/status/${merchantTransactionId}?token=${req.headers.authorization ? req.headers.authorization.split(" ")[1] : ''}`,
             redirectMode: 'POST',
             mobileNumber: "123456789",
             paymentInstrument: {
